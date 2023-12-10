@@ -9,9 +9,9 @@ pub struct Game {
 
 #[derive(Debug)]
 pub struct Round {
-    pub reds: i8,
-    pub greens: i8,
-    pub blues: i8
+    pub reds: i32,
+    pub greens: i32,
+    pub blues: i32
 }
 
 #[derive(Parser)]
@@ -57,7 +57,7 @@ fn process_round(pair: Pair<Rule>) -> Round {
     for color_count in pair.into_inner() {
         let color = color_count.as_str();
         let count = color_count.into_inner().next().unwrap()
-            .as_str().trim().parse::<i8>().unwrap();
+            .as_str().trim().parse::<i32>().unwrap();
         if color.contains("blue") {
             round.blues += count;
         } else if color.contains("green") {
