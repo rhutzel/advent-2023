@@ -1,0 +1,8 @@
+WHITESPACE = _{ " " }
+game_number = { ASCII_DIGIT+ }
+count = { ASCII_DIGIT+ }
+
+game = { game_title ~ round ~ (";" ~ round)* }
+game_title = { "Game " ~ game_number ~ ":" }
+round = { color_count ~ ("," ~ color_count)* }
+color_count = { count ~ ("blue" | "green" | "red") }

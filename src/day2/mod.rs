@@ -1,59 +1,69 @@
+mod parser;
+
 use std::{io};
 use std::fs::File;
-use std::io::BufRead;
+use std::io::{BufRead, Error};
 use std::path::Path;
+use std::str::FromStr;
+use crate::day2::parser::Round;
 
-pub fn run() {
-    let mut sum: i32 = 0;
+pub fn run() -> Result<i16, Error> {
+    let mut sum: i16 = 0;
+    let limits: Round = Round { blues: 14, greens: 13, reds: 12 };
 
     if let Ok(lines) = read_lines("src/day2/input.txt") {
         for line in lines {
-            sum += first_and_last_digits_combined(line.unwrap().as_str());
+            let game = parser::parse(line?.as_str());
+            if within_limits(&limits, &game.rounds) {
+                sum += game.game_number;
+            }
         }
+        println!("Sum = {sum}");
+    } else {
+        println!("File could not be read.");
     }
 
-    println!("Sum = {sum}");
+    Ok(sum)
+}
+
+/*
+fn parse_line_into_game(line: String) {
+    let mut raw_game = line.split(":");
+    let mut game = Game {
+        game_number: FromStr::from_str(raw_game.next().unwrap().replace("Game ", "").as_str()).unwrap(),
+        rounds: Vec::new()
+    };
+
+    let gameNumber = game.game_number;
+    println!("{gameNumber}");
+
+    let mut raw_rounds = raw_game.next().unwrap().split(";");
+    for raw_round in raw_rounds {
+        let mut round = Round::default();
+
+        let mut color_expressions = raw_round.split(",");
+        for color_exp in color_expressions {
+            //let mut colorQuantity = colorExp.split(" ").next().unwrap();
+            // println!("{colorQuantity}");
+        }
+
+        game.rounds.push(round);
+    }
+}
+*/
+
+fn within_limits(limits: &Round, test_rounds: &Vec<Round>) -> bool {
+    for round in test_rounds {
+        if limits.reds < round.reds || limits.greens < round.greens || limits.blues < round.blues {
+            return false;
+        }
+    }
+    true
 }
 
 fn read_lines<A>(filename: A) -> io::Result<io::Lines<io::BufReader<File>>> where A: AsRef<Path> {
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
-}
-
-
-fn first_and_last_digits_combined(line: &str) -> i32 {
-    let targets = [
-        ("1", 1), ("one", 1), ("2", 2), ("two", 2), ("3", 3), ("three", 3),
-        ("4", 4), ("four", 4), ("5", 5), ("five", 5), ("6", 6), ("six", 6),
-        ("7", 7), ("seven", 7), ("8", 8), ("eight", 8), ("9", 9), ("nine", 9),
-        ("10", 10), ("ten", 10)
-    ];
-
-    let mut first_digit: Option<i32> = None;
-    let mut last_digit: Option<i32> = None;
-
-    let mut min_idx: Option<usize> = None;
-    let mut max_idx: Option<usize> = None;
-
-    for target in targets {
-        let idx = line.find(target.0);
-        let ridx = line.rfind(target.0);
-
-        if idx.is_some() && (min_idx.is_none() || min_idx.unwrap() > idx.unwrap()) {
-            min_idx = idx;
-            first_digit = Some(target.1);
-        }
-        if ridx.is_some() && (max_idx.is_none() || max_idx.unwrap() < ridx.unwrap()) {
-            max_idx = ridx;
-            last_digit = Some(target.1);
-        }
-    }
-
-    if first_digit.is_some() && last_digit.is_some() {
-        (first_digit.unwrap() * 10) + last_digit.unwrap()
-    } else {
-        0
-    }
 }
 
 #[cfg(test)]
@@ -62,22 +72,26 @@ mod tests {
 
     #[test]
     fn test_line_eval() {
-        let mut line = "eightwothree";
-        assert_eq!(first_and_last_digits_combined(line), 83);
-        line = "abcone2threexyz";
-        assert_eq!(first_and_last_digits_combined(line), 13);
-        line = "xtwone3four";
-        assert_eq!(first_and_last_digits_combined(line), 24);
-        line = "4nineeightseven2";
-        assert_eq!(first_and_last_digits_combined(line), 42);
-        line = "zoneight234";
-        assert_eq!(first_and_last_digits_combined(line), 14);
-        line = "7pqrstsixteen";
-        assert_eq!(first_and_last_digits_combined(line), 76);
-        line = "zlmlk1";
-        assert_eq!(first_and_last_digits_combined(line), 0);
-        line = "8jkfncbeight7seven8";
-        assert_eq!(first_and_last_digits_combined(line), 88);
-    }
+        let limits: Round = Round { blues: 14, greens: 13, reds: 12 };
 
+        let test1_possible = "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green";
+        let mut test = parser::parse(test1_possible);
+        assert_eq!(true, within_limits(&limits, &test.rounds));
+
+        let test2_possible = "Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue";
+        test = parser::parse(test2_possible);
+        assert_eq!(true, within_limits(&limits, &test.rounds));
+
+        let test3_impossible = "Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red";
+        test = parser::parse(test3_impossible);
+        assert_eq!(false, within_limits(&limits, &test.rounds));
+
+        let test4_impossible = "Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red";
+        test = parser::parse(test4_impossible);
+        assert_eq!(false, within_limits(&limits, &test.rounds));
+
+        let test5_possible = "Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
+        test = parser::parse(test5_possible);
+        assert_eq!(true, within_limits(&limits, &test.rounds));
+    }
 }

@@ -2,3 +2,9 @@
 name = "advent-2023"
 version = "0.1.0"
 edition = "2021"
+
+[build-dependencies]
+
+[dependencies]
+pest = "2.6"
+pest_derive = "2.6"

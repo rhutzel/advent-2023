@@ -10,9 +10,10 @@ pub fn run() {
         for line in lines {
             sum += first_and_last_digits_combined(line.unwrap().as_str());
         }
+        println!("Sum = {sum}");
+    } else {
+        println!("File could not be read.");
     }
-
-    println!("Sum = {sum}");
 }
 
 fn read_lines<A>(filename: A) -> io::Result<io::Lines<io::BufReader<File>>> where A: AsRef<Path> {
