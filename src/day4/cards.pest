@@ -1,0 +1,6 @@
+card_number = { ASCII_DIGIT+ }
+played_number = { " "* ~ ASCII_DIGIT+ }
+winning_number = { " "* ~ ASCII_DIGIT+ }
+
+card = { card_title ~ (" "* ~ winning_number)+ ~ " | " ~ (" "* ~ played_number)+ }
+card_title = { "Card " ~ " "* ~ card_number ~ ": " }
