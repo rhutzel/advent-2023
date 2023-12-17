@@ -1,9 +1,8 @@
 mod parser;
 mod part1;
+mod part2;
 
 pub fn run() {
-    match part1::run() {
-        Ok(sum) => println!("Sum = {sum}"),
-        Err(_) => println!("Error!")
-    }
+    let sum = part2::run();
+    println!("Sum = {sum}");
 }
